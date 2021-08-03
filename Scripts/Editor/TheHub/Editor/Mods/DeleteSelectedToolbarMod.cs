@@ -1,4 +1,5 @@
-﻿using Plugins.OdinUtils.Editor;
+﻿using niscolas.OdinUtils.Editor;
+using Plugins.OdinUtils.Editor;
 using Plugins.OdinUtils.Editor.Extensions;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;

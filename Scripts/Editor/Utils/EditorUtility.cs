@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Plugins.OdinUtils.Editor
+namespace niscolas.OdinUtils.Editor
 {
 	public static class EditorUtility
 	{
