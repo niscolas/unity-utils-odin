@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Plugins.UnityExtensions;
+using niscolas.UnityExtensions;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 

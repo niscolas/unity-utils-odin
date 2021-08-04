@@ -1,7 +1,7 @@
 ﻿using System.Linq;
+using niscolas.UnityExtensions;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
-using UnityExtensions;
 
 namespace Plugins.OdinUtils.Editor.Extensions
 {

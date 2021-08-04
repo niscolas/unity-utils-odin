@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using niscolas.UnityExtensions;
 using Plugins.OdinUtils.Editor.Extensions;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
-using UnityExtensions;
 using Object = UnityEngine.Object;
 
 namespace Plugins.OdinUtils.Editor

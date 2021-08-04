@@ -4,7 +4,6 @@ using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
-using UnityExtensions;
 
 namespace Editor.EditorWindows
 {

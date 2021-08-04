@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using niscolas.UnityExtensions;
 using Plugins.OdinUtils.Editor;
-using Plugins.UnityExtensions;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
-using UnityExtensions;
 
 namespace OdinUtils.TheHub
 {

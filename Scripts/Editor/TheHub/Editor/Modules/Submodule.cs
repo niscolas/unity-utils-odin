@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using niscolas.UnityExtensions;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
-using UnityExtensions;
 
 namespace OdinUtils.TheHub
 {

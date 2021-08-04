@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using niscolas.UnityExtensions;
 using Plugins.OdinUtils.Editor.Attributes;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
-using UnityExtensions;
 
 namespace OdinUtils.TheHub
 {
