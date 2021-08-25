@@ -80,7 +80,7 @@ namespace OdinUtils.TheHub
 
 		protected override IEnumerable<object> GetTargets()
 		{
-			if (Targets.IsNotNullOrEmpty())
+			if (!Targets.IsNullOrEmpty())
 			{
 				yield return Targets;
 			}
