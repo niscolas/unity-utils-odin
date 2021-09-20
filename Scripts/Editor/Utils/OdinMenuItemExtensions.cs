@@ -18,25 +18,28 @@ namespace Plugins.OdinUtils.Editor
 			}
 		}
 
-		public static void OnRightClick(this IEnumerable<OdinMenuItem> items, Action<OdinMenuItem> action)
+		public static IEnumerable<OdinMenuItem> OnRightClick(this IEnumerable<OdinMenuItem> menuItems, Action<OdinMenuItem> action)
 		{
-			items = items.AsArray();
-			foreach (OdinMenuItem item in items)
+			foreach (OdinMenuItem menuItem in menuItems)
 			{
-				item.OnRightClick += action;
+				menuItem.OnRightClick += action;
+				
+				yield return menuItem;
 			}
 		}
 
-		public static void BecomeDraggable(this IEnumerable<OdinMenuItem> odinMenuItems, Type type = null)
+		public static IEnumerable<OdinMenuItem> BecomeDraggable(this IEnumerable<OdinMenuItem> menuItems, Type type = null)
 		{
-			void OnMenuItemDraw(OdinMenuItem item)
+			void OnMenuItemDraw(OdinMenuItem menuItem)
 			{
-				item.BecomeDraggable(type);
+				menuItem.BecomeDraggable(type);
 			}
 
-			foreach (OdinMenuItem menuItem in odinMenuItems)
+			foreach (OdinMenuItem menuItem in menuItems)
 			{
 				menuItem.OnDrawItem += OnMenuItemDraw;
+				
+				yield return menuItem;
 			}
 		}
 	}

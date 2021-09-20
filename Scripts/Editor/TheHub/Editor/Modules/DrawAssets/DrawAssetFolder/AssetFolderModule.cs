@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using OdinUtils.TheHub;
+using UnityEngine;
 
-namespace OdinUtils.TheHub
+namespace niscolas.TheHub
 {
 	[CreateAssetMenu(menuName = CreateAssetMenuPath + "Module")]
 	public class AssetFolderModule : Module<AssetFolderSubmodule>

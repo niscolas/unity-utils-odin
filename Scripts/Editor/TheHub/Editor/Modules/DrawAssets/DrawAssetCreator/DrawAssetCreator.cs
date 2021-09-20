@@ -10,7 +10,7 @@ namespace OdinUtils.TheHub
 {
 	public abstract class DrawAssetCreator : IDrawAssetCreator
 	{
-		public abstract string FolderPath { get; set; }
+		public abstract string FolderPath { get; }
 		public abstract ScriptableObject Data { get; set; }
 		public abstract Action<ScriptableObject> CreatedCallback { get; set; }
 		public abstract void LinkHub(IHub hub);
@@ -20,7 +20,6 @@ namespace OdinUtils.TheHub
 			IHub hub,
 			Type type,
 			string menuPathPrefix = "",
-			string targetFolder = "",
 			Action<ScriptableObject> createdCallback = null
 		)
 		{
@@ -44,7 +43,6 @@ namespace OdinUtils.TheHub
 
 			IDrawAssetCreator drawAssetCreator = (IDrawAssetCreator) genericType.CreateInstance(type);
 			drawAssetCreator.LinkHub(hub);
-			drawAssetCreator.FolderPath = targetFolder;
 			drawAssetCreator.CreatedCallback = createdCallback;
 
 			hub.CurrentDrawAssetCreator = drawAssetCreator;
@@ -61,13 +59,20 @@ namespace OdinUtils.TheHub
 		}
 	}
 
+	[Serializable]
 	public class DrawAssetCreator<T> : DrawAssetCreator where T : ScriptableObject
 	{
 		private const string HorizontalCreateNew = "Horizontal";
+		private const int LabelWidth = 100;
 
-		[HorizontalGroup(HorizontalCreateNew, 0.85f, 0, 10)]
+		[HorizontalGroup(HorizontalCreateNew, 0.4f, 0, 10)]
+		[VerticalGroup(HorizontalCreateNew + "/Folder")]
+		[FolderPath, LabelText("Folder"), LabelWidth(LabelWidth)]
+		[SerializeField]
+		private string _folderPath;
+
 		[VerticalGroup(HorizontalCreateNew + "/Name")]
-		[LabelWidth(100)]
+		[LabelWidth(LabelWidth)]
 		[SerializeField]
 		private string _name;
 
@@ -84,7 +89,7 @@ namespace OdinUtils.TheHub
 
 		public override Action<ScriptableObject> CreatedCallback { get; set; }
 
-		public override string FolderPath { get; set; }
+		public override string FolderPath => _folderPath;
 
 		private IHub _hub;
 
@@ -103,7 +108,7 @@ namespace OdinUtils.TheHub
 		[Button("Create")]
 		private void CreateNewData()
 		{
-			_data.Create($"{FolderPath}/{_name}.asset");
+			_data.Create($"{_folderPath}/{_name}.asset");
 
 			CreatedCallback?.Invoke(_data);
 

@@ -2,111 +2,88 @@
 using System.Collections.Generic;
 using System.Linq;
 using niscolas.UnityExtensions;
+using niscolas.UnityUtils.Core.Editor;
+using OdinUtils.TheHub;
 using Plugins.OdinUtils.Editor;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace OdinUtils.TheHub
+namespace niscolas.TheHub
 {
-	[CreateAssetMenu(menuName = AssetFolderModule.CreateAssetMenuPath + "Submodule")]
-	public class AssetFolderSubmodule : Submodule
-	{
-		[Title("Settings")]
-		[InlineButton(nameof(PrintTypeName), "Validate")]
-		[SerializeField]
-		private string _fullTypeName;
+    [CreateAssetMenu(menuName = AssetFolderModule.CreateAssetMenuPath + "Submodule")]
+    public class AssetFolderSubmodule : Submodule
+    {
+        [Title("Settings")]
+        [InlineButton(nameof(PrintTypeName), "Validate")]
+        [SerializeField]
+        private string _fullTypeName;
 
-		[SerializeField]
-		private bool _autoFolder;
+        private string TitleMenuPath => $"{Title}";
 
-		[HideIf(nameof(_autoFolder))]
-		[Required]
-		[FolderPath]
-		[SerializeField]
-		private string _folder;
+        private void PrintTypeName()
+        {
+            Type type = FindType();
 
-		[SerializeField]
-		private bool _includeSubFolders;
+            if (type != null)
+            {
+                Debug.Log(type.AssemblyQualifiedName);
+            }
+            else
+            {
+                Debug.LogWarning("the type for the given typename wasn't found :(");
+            }
+        }
 
-		public Type Type => _fullTypeName.FindType();
+        private Type FindType()
+        {
+            return _fullTypeName.FindType();
+        }
 
-		public bool IncludeSubFolders => _includeSubFolders;
+        public override IEnumerable<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
+        {
+            List<OdinMenuItem> menuItems = new List<OdinMenuItem>();
+            OdinMenuTree tree = hub.Tree;
 
-		private string TitleMenuPath => $"{Title}";
+            Type type = FindType();
+            IEnumerable<Object> assets = AssetDatabaseUtility.FindAllAssetsOfType(type);
 
-		private string FolderPath => _folder;
+            DrawFolderMenuItem(tree, menuItems);
+            DrawTreeItems(tree, menuItems, assets, type);
 
-		private string GetFolderPath(IHub hub, Module parentModule)
-		{
-			if (!_autoFolder)
-			{
-				return FolderPath;
-			}
+            OdinMenuItem createNewMenuItem = DrawAssetCreator.DrawMenuItem(hub, type, TitleMenuPath);
+            menuItems.Add(createNewMenuItem);
 
-			string assetsFolderPath = hub.Profile.AssetsFolderPath;
-			string parentModuleName = $"{parentModule.Title.WithoutSpaces()}Module";
-			string submoduleName = Title.WithoutSpaces();
-			string autoFolderPath = $"{assetsFolderPath}/{parentModuleName}/{submoduleName}";
+            return menuItems;
+        }
 
-			return autoFolderPath;
-		}
+        private void DrawFolderMenuItem(OdinMenuTree tree, ICollection<OdinMenuItem> menuItems)
+        {
+            OdinMenuItem menuItem = tree
+                .AddObjectAtPath(TitleMenuPath, new EmptyDraw())
+                .AddIcon(Icon)
+                .Last();
 
-		private void PrintTypeName()
-		{
-			Type type = Type;
-			if (type != null)
-			{
-				Debug.Log(type.AssemblyQualifiedName);
-			}
-			else
-			{
-				Debug.LogWarning("The Type for the given TypeName wasn't found :(");
-			}
-		}
+            menuItems.Add(menuItem);
+        }
 
-		public override IEnumerable<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
-		{
-			List<OdinMenuItem> menuItems = new List<OdinMenuItem>();
+        private void DrawTreeItems(
+            OdinMenuTree tree, List<OdinMenuItem> menuItems, IEnumerable<Object> assets, Type type)
+        {
+            foreach (Object asset in assets)
+            {
+                tree.AddAssetAtPath($"{TitleMenuPath}/{asset.name}", asset.Path(), type);
+            }
 
-			DrawFolderMenuItem(hub, menuItems);
-			DrawTreeItems(hub, parentModule, menuItems);
+            OdinMenuItem[] newMenuItems = tree
+                .SortMenuItemsByName(false)
+                .AddThumbnailIcons(true)
+                .OnRightClick(item => item.PingAsset())
+                .BecomeDraggable(type)
+                .AsArray();
 
-			string folderPath = GetFolderPath(hub, parentModule);
-			OdinMenuItem createNewMenuItem = DrawAssetCreator.DrawMenuItem(hub, Type, TitleMenuPath, folderPath);
-			menuItems.Add(createNewMenuItem);
-
-			return menuItems;
-		}
-
-		private void DrawFolderMenuItem(IHub hub, ICollection<OdinMenuItem> menuItems)
-		{
-			OdinMenuItem menuItem = hub.Tree
-				.AddObjectAtPath(TitleMenuPath, new EmptyDraw())
-				.AddIcon(Icon)
-				.Last();
-
-			menuItems.Add(menuItem);
-		}
-
-		private void DrawTreeItems(IHub hub, Module parentModule, List<OdinMenuItem> menuItems)
-		{
-			Type type = Type;
-
-			if (type == null) return;
-
-			string folderPath = GetFolderPath(hub, parentModule);
-
-			IEnumerable<OdinMenuItem> newMenuItems = hub.Tree
-				.AddAllAssetsAtPath(TitleMenuPath, folderPath, type, IncludeSubFolders)
-				.SortMenuItemsByName(false)
-				.AddThumbnailIcons(true)
-				.AsArray();
-
-			newMenuItems.OnRightClick(item => item.PingAsset());
-			newMenuItems.BecomeDraggable(type);
-
-			menuItems.AddRange(newMenuItems);
-		}
-	}
+            menuItems.AddRange(newMenuItems);
+        }
+    }
 }

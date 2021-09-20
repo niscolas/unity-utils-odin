@@ -5,7 +5,7 @@ namespace OdinUtils.TheHub
 {
 	public interface IDrawAssetCreator
 	{
-		string FolderPath { get; set; }
+		string FolderPath { get; }
 		ScriptableObject Data { get; }
 		Action<ScriptableObject> CreatedCallback { get; set; }
 
