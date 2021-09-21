@@ -1,74 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using niscolas.UnityExtensions;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 
 namespace OdinUtils.TheHub
 {
-	public abstract class Module : ScriptableObject
-	{
-		[SerializeField]
-		private string _title;
+    public abstract class Module : ScriptableObject
+    {
+        [SerializeField]
+        private string _title;
 
-		[SerializeField]
-		private Texture _icon;
+        [SerializeField]
+        private Texture _icon;
 
-		public abstract Type SubmoduleType { get; }
-		public string Title => _title;
+        public abstract Type SubmoduleType { get; }
+        public string Title => _title;
 
-		public Texture Icon => _icon;
+        public Texture Icon => _icon;
 
-		public abstract IEnumerable<Submodule> Submodules { get; }
+        public abstract IEnumerable<Submodule> Submodules { get; }
 
-		public abstract void AddSubmodule(Submodule submodule);
-		public abstract void RemoveSubmodule(Submodule submodule);
+        public abstract void AddSubmodule(Submodule submodule);
+        public abstract void RemoveSubmodule(Submodule submodule);
 
-		public virtual SubmoduleMenuItems DrawTree(IHub hub)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public virtual SubmoduleMenuItems DrawTree(IHub hub)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
-	public abstract class Module<T> : Module where T : Submodule
-	{
-		[SerializeField]
-		private List<T> _submodules;
+    public abstract class Module<T> : Module where T : Submodule
+    {
+        [SerializeField]
+        private List<T> _submodules;
 
-		public override IEnumerable<Submodule> Submodules => _submodules;
-		public override Type SubmoduleType => typeof(T);
+        public override IEnumerable<Submodule> Submodules => _submodules;
+        public override Type SubmoduleType => typeof(T);
 
-		public override void AddSubmodule(Submodule submodule)
-		{
-			_submodules.Add(submodule as T);
-		}
+        public override void AddSubmodule(Submodule submodule)
+        {
+            _submodules.Add(submodule as T);
+        }
 
-		public override void RemoveSubmodule(Submodule submodule)
-		{
-			_submodules.Remove(submodule as T);
-		}
+        public override void RemoveSubmodule(Submodule submodule)
+        {
+            _submodules.Remove(submodule as T);
+        }
 
-		public override SubmoduleMenuItems DrawTree(IHub hub)
-		{
-			SubmoduleMenuItems submoduleMenuItems = new SubmoduleMenuItems();
+        public override SubmoduleMenuItems DrawTree(IHub hub)
+        {
+            SubmoduleMenuItems submoduleMenuItems = new SubmoduleMenuItems();
 
-			foreach (T submodule in _submodules)
-			{
-				IEnumerable<OdinMenuItem> menuItems = DrawSubmodule(hub, submodule);
-				submoduleMenuItems.AddManyKeys(menuItems, submodule);
-			}
+            foreach (T submodule in _submodules)
+            {
+                IReadOnlyList<OdinMenuItem> menuItems = DrawSubmodule(hub, submodule);
 
-			return submoduleMenuItems;
-		}
+                if (menuItems.IsNullOrEmpty())
+                {
+                    continue;
+                }
 
-		protected virtual IEnumerable<OdinMenuItem> DrawSubmodule(IHub hub, T submodule)
-		{
-			if (!submodule)
-			{
-				return default;
-			}
+                submoduleMenuItems.AddManyKeys(menuItems, submodule);
+            }
 
-			return submodule.DrawMenuTree(hub, this);
-		}
-	}
+            return submoduleMenuItems;
+        }
+
+        protected virtual IReadOnlyList<OdinMenuItem> DrawSubmodule(
+            IHub hub, T submodule)
+        {
+            if (!submodule)
+            {
+                return default;
+            }
+
+            return submodule.DrawMenuTree(hub, this);
+        }
+    }
 }

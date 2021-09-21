@@ -24,9 +24,7 @@ namespace niscolas.TheHub
 
         private void PrintTypeName()
         {
-            Type type = FindType();
-
-            if (type != null)
+            if (TryFindType(out Type type))
             {
                 Debug.Log(type.AssemblyQualifiedName);
             }
@@ -36,17 +34,21 @@ namespace niscolas.TheHub
             }
         }
 
-        private Type FindType()
+        private bool TryFindType(out Type type)
         {
-            return _fullTypeName.FindType();
+            return _fullTypeName.TryFindType(out type);
         }
 
-        public override IEnumerable<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
+        public override IReadOnlyList<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
         {
             List<OdinMenuItem> menuItems = new List<OdinMenuItem>();
             OdinMenuTree tree = hub.Tree;
 
-            Type type = FindType();
+            if (!TryFindType(out Type type))
+            {
+                return default;
+            }
+            
             IEnumerable<Object> assets = AssetDatabaseUtility.FindAllAssetsOfType(type);
 
             DrawFolderMenuItem(tree, menuItems);
@@ -81,7 +83,7 @@ namespace niscolas.TheHub
                 .AddThumbnailIcons(true)
                 .OnRightClick(item => item.PingAsset())
                 .BecomeDraggable(type)
-                .AsArray();
+                .ToArray();
 
             menuItems.AddRange(newMenuItems);
         }

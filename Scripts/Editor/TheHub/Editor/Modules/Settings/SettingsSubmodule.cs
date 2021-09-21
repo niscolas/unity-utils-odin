@@ -12,7 +12,7 @@ namespace OdinUtils.TheHub
     [CreateAssetMenu(menuName = SettingsModule.CreateAssetMenuPath + "Submodule")]
     public class SettingsSubmodule : Submodule
     {
-        public override IEnumerable<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
+        public override IReadOnlyList<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
         {
             List<OdinMenuItem> menuItems = new List<OdinMenuItem>();
 
@@ -30,7 +30,7 @@ namespace OdinUtils.TheHub
 
         private static void DrawAllModuleTypes(IHub hub, List<OdinMenuItem> menuItems)
         {
-            Module[] modules = hub.Profile.Modules.AsArray();
+            Module[] modules = hub.Profile.Modules.ToArray();
 
             IEnumerable<Type> moduleConcreteTypes = typeof(Module).GetAllConcreteTypes();
 
@@ -102,7 +102,7 @@ namespace OdinUtils.TheHub
             IHub hub, IEnumerable<Module> modules, List<OdinMenuItem> menuItems, string menuPath
         )
         {
-            modules = modules.AsArray();
+            modules = modules.ToArray();
 
             if (modules.IsNullOrEmpty()) return;
 

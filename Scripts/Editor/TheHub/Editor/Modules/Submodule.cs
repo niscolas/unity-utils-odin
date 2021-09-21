@@ -7,58 +7,58 @@ using UnityEngine;
 
 namespace OdinUtils.TheHub
 {
-	public abstract class Submodule : ScriptableObject
-	{
-		[SerializeField]
-		private string title;
+    public abstract class Submodule : ScriptableObject
+    {
+        [SerializeField]
+        private string title;
 
-		[SerializeField]
-		private Texture icon;
+        [SerializeField]
+        private Texture icon;
 
-		[Title("Mods")]
-		[SerializeField]
-		private ToolbarMod[] _toolbarMods;
+        [Title("Mods")]
+        [SerializeField]
+        private ToolbarMod[] _toolbarMods;
 
-		[Title("Debug")]
-		public string Title => title;
+        [Title("Debug")]
+        public string Title => title;
 
-		public Texture Icon => icon;
+        public Texture Icon => icon;
 
-		public virtual IEnumerable<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
-		{
-			throw new NotImplementedException();
-		}
+        public virtual IReadOnlyList<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
+        {
+            return default;
+        }
 
-		public void DrawToolbarMods(IHub hub)
-		{
-			object[] drawTargets = hub.Targets;
+        public void DrawToolbarMods(IHub hub)
+        {
+            object[] drawTargets = hub.Targets;
 
-			if (!ShouldDrawToolbarMods(drawTargets)) return;
+            if (!ShouldDrawToolbarMods(drawTargets)) return;
 
-			if (_toolbarMods.IsNullOrEmpty()) return;
+            if (_toolbarMods.IsNullOrEmpty()) return;
 
-			foreach (ToolbarMod toolbarMod in _toolbarMods)
-			{
-				toolbarMod.Draw(hub);
-			}
-		}
+            foreach (ToolbarMod toolbarMod in _toolbarMods)
+            {
+                toolbarMod.Draw(hub);
+            }
+        }
 
-		private static bool ShouldDrawToolbarMods(object[] drawTargets)
-		{
-			if (!drawTargets.IsValid())
-			{
-				return false;
-			}
+        private static bool ShouldDrawToolbarMods(object[] drawTargets)
+        {
+            if (!drawTargets.IsValid())
+            {
+                return false;
+            }
 
-			foreach (object drawTarget in drawTargets)
-			{
-				if (drawTarget.GetType() == typeof(EmptyDraw))
-				{
-					return false;
-				}
-			}
+            foreach (object drawTarget in drawTargets)
+            {
+                if (drawTarget.GetType() == typeof(EmptyDraw))
+                {
+                    return false;
+                }
+            }
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 }
