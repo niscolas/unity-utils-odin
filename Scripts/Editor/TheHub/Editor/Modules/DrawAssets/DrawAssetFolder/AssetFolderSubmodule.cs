@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using niscolas.UnityExtensions;
+using niscolas.UnityUtils.Core;
 using niscolas.UnityUtils.Core.Editor;
+using niscolasPlugins.UnityUtils.Core;
 using OdinUtils.TheHub;
 using Plugins.OdinUtils.Editor;
 using Sirenix.OdinInspector;
@@ -24,24 +26,18 @@ namespace niscolas.TheHub
 
         private void PrintTypeName()
         {
-            if (TryFindType(out Type type))
-            {
-                Debug.Log(type.AssemblyQualifiedName);
-            }
-            else
-            {
-                Debug.LogWarning("the type for the given typename wasn't found :(");
-            }
+            TryFindType(out Type _);
         }
 
         private bool TryFindType(out Type type)
         {
-            return _fullTypeName.TryFindType(out type);
+            return TypeUtility.TryFindType(_fullTypeName, out type);
         }
 
         public override IReadOnlyList<OdinMenuItem> DrawMenuTree(IHub hub, Module parentModule)
         {
             List<OdinMenuItem> menuItems = new List<OdinMenuItem>();
+            
             OdinMenuTree tree = hub.Tree;
 
             if (!TryFindType(out Type type))
@@ -52,12 +48,19 @@ namespace niscolas.TheHub
             IEnumerable<Object> assets = AssetDatabaseUtility.FindAllAssetsOfType(type);
 
             DrawFolderMenuItem(tree, menuItems);
+            
+            DrawCreateNewItemMenuItem(hub, type, menuItems);
+
             DrawTreeItems(tree, menuItems, assets, type);
 
+            return menuItems;
+        }
+
+        private void DrawCreateNewItemMenuItem(
+            IHub hub, Type type, List<OdinMenuItem> menuItems)
+        {
             OdinMenuItem createNewMenuItem = DrawAssetCreator.DrawMenuItem(hub, type, TitleMenuPath);
             menuItems.Add(createNewMenuItem);
-
-            return menuItems;
         }
 
         private void DrawFolderMenuItem(OdinMenuTree tree, ICollection<OdinMenuItem> menuItems)
@@ -71,11 +74,17 @@ namespace niscolas.TheHub
         }
 
         private void DrawTreeItems(
-            OdinMenuTree tree, List<OdinMenuItem> menuItems, IEnumerable<Object> assets, Type type)
+            OdinMenuTree tree, 
+            List<OdinMenuItem> menuItems, 
+            IEnumerable<Object> assets, 
+            Type type)
         {
             foreach (Object asset in assets)
             {
-                tree.AddAssetAtPath($"{TitleMenuPath}/{asset.name}", asset.Path(), type);
+                tree.AddAssetAtPath(
+                    $"{TitleMenuPath}/{asset.name}", 
+                    asset.Path(), 
+                    type);
             }
 
             OdinMenuItem[] newMenuItems = tree
