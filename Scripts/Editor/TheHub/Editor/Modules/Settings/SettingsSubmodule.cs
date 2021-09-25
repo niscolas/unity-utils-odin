@@ -63,10 +63,11 @@ namespace OdinUtils.TheHub
             return menuItems;
         }
 
-        private static void DrawCreateNewModule
-        (
-            IHub hub, Type moduleType, string folderMenuPath, ICollection<OdinMenuItem> menuItems
-        )
+        private static void DrawCreateNewModule(
+            IHub hub,
+            Type moduleType,
+            string folderMenuPath,
+            ICollection<OdinMenuItem> menuItems)
         {
             void OnModuleCreated(ScriptableObject newModule)
             {
@@ -80,10 +81,8 @@ namespace OdinUtils.TheHub
             menuItems.Add(createModuleMenuItem);
         }
 
-        private static string DrawModuleTypeFolder
-        (
-            Type moduleType, OdinMenuTree tree, ICollection<OdinMenuItem> menuItems
-        )
+        private static string DrawModuleTypeFolder(
+            Type moduleType, OdinMenuTree tree, ICollection<OdinMenuItem> menuItems)
         {
             string menuPath = $"All {moduleType.Name}s";
 
@@ -97,10 +96,8 @@ namespace OdinUtils.TheHub
             return menuPath;
         }
 
-        private static void DrawModules
-        (
-            IHub hub, IEnumerable<Module> modules, List<OdinMenuItem> menuItems, string menuPath
-        )
+        private static void DrawModules(
+            IHub hub, IEnumerable<Module> modules, List<OdinMenuItem> menuItems, string menuPath)
         {
             modules = modules.ToArray();
 
@@ -135,7 +132,7 @@ namespace OdinUtils.TheHub
             void OnCreated(ScriptableObject newSubmodule)
             {
                 module.AddSubmodule(newSubmodule as Submodule);
-                AssetDatabase.SaveAssets();
+                EditorUtility.SetDirty(module);
             }
 
             OdinMenuItem createNewMenuItem = DrawAssetCreator.DrawMenuItem(
@@ -144,8 +141,7 @@ namespace OdinUtils.TheHub
             menuItems.Add(createNewMenuItem);
         }
 
-        private static void DrawSubmodules
-        (
+        private static void DrawSubmodules (
             IHub hub, Module module, List<OdinMenuItem> menuItems, string moduleMenuPath
         )
         {

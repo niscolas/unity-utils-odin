@@ -23,6 +23,7 @@ namespace OdinUtils.TheHub
         public abstract IEnumerable<Submodule> Submodules { get; }
 
         public abstract void AddSubmodule(Submodule submodule);
+        
         public abstract void RemoveSubmodule(Submodule submodule);
 
         public virtual SubmoduleMenuItems DrawTree(IHub hub)
