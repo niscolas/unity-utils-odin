@@ -20,19 +20,25 @@ namespace OdinUtils.TheHub
 
         private IEnumerable<Module> PossibleModules => Profile.Modules;
 
-        private bool CanDrawMenu => _selectedModule != null && _drewGuiOnce;
+        private bool CanDrawMenu => _activeModule != null && _drewGuiOnce;
 
         private SubmoduleMenuItems _currentSubmoduleMenuItems = new SubmoduleMenuItems();
 
-        private Module _selectedModule;
+        private Module _activeModule;
         private Submodule _selectedSubmodule;
         private bool _drewGuiOnce;
-        private bool _shouldRebuildTree = true;
+        private static bool _shouldRebuildTree = true;
 
         [MenuItem("Tools/The Hub")]
         public static void Open()
         {
             CreateInstance<TheHub>().Show();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Init()
+        {
+            Static_RebuildMenuTree();
         }
 
         protected override void Initialize()
@@ -42,7 +48,6 @@ namespace OdinUtils.TheHub
 
         protected override void OnGUI()
         {
-            CheckFocus();
             TryRebuildTree();
             DrawTitle();
             DrawModuleOptions();
@@ -52,30 +57,23 @@ namespace OdinUtils.TheHub
             _drewGuiOnce = true;
         }
 
-        private void CheckFocus()
-        {
-            if (!hasFocus)
-            {
-                RebuildMenuTree();
-            }
-        }
-
         protected override void OnBeginDrawEditors()
         {
             DrawTopToolbar();
         }
 
-        public void RebuildMenuTree()
+        protected override void OnDestroy()
         {
-            _shouldRebuildTree = true;
-        }
+            base.OnDestroy();
 
-        private void TryRebuildTree()
-        {
-            if (_shouldRebuildTree && Event.current.type == EventType.Layout)
+            if (MenuTree != null)
             {
-                ForceMenuTreeRebuild();
-                _shouldRebuildTree = false;
+                MenuTree.Selection.SelectionChanged -= UpdateTargets;
+            }
+
+            if (CurrentDrawAssetCreator != null && CurrentDrawAssetCreator.Data != null)
+            {
+                DestroyImmediate(CurrentDrawAssetCreator.Data);
             }
         }
 
@@ -93,7 +91,10 @@ namespace OdinUtils.TheHub
 
         protected override OdinMenuTree BuildMenuTree()
         {
-            if (!_shouldRebuildTree) return MenuTree;
+            if (!_shouldRebuildTree)
+            {
+                return MenuTree;
+            }
 
             Tree = new OdinMenuTree(true, OdinMenuStyle.TreeViewStyle);
             Tree.Selection.SelectionChanged -= UpdateTargets;
@@ -116,14 +117,6 @@ namespace OdinUtils.TheHub
             return Tree;
         }
 
-        private void DrawSelectedModuleTree()
-        {
-            if (_selectedModule)
-            {
-                _currentSubmoduleMenuItems = _selectedModule.DrawTree(this);
-            }
-        }
-
         private void SetupProfile()
         {
             string[] profileGuid = AssetDatabase.FindAssets($"t:{nameof(TheHubProfile)}");
@@ -131,22 +124,16 @@ namespace OdinUtils.TheHub
             Profile = (TheHubProfile) AssetDatabase.LoadAssetAtPath(profilePath, typeof(TheHubProfile));
         }
 
-        private void UpdateTargets(SelectionChangedType selectionChangedType)
+        private void TryRebuildTree()
         {
-            OdinMenuTreeSelection selection = Tree.Selection;
-            Targets = selection.SelectedValues.ToArray();
-
-            DetermineSelectedSubmodule();
-        }
-
-        private void DetermineSelectedSubmodule()
-        {
-            OdinMenuTreeSelection selection = Tree.Selection;
-            if (selection.Count == 1)
+            if (!_shouldRebuildTree ||
+                Event.current.type != EventType.Layout)
             {
-                OdinMenuItem selectedItem = selection[0];
-                _currentSubmoduleMenuItems.TryGetValue(selectedItem, out _selectedSubmodule);
+                return;
             }
+
+            ForceMenuTreeRebuild();
+            _shouldRebuildTree = false;
         }
 
         private void DrawTitle()
@@ -174,57 +161,89 @@ namespace OdinUtils.TheHub
 
         private void DrawPossibleModuleToolbarButton(Module module)
         {
-            bool isModuleActive = CheckIsModuleActive(module);
-            GUIContent moduleGuiContent = GetModuleGuiContent(module);
+            bool isActive = CheckIsActiveModule(module);
+            GUIContent guiContent = GetModuleGuiContent(module);
 
-            if (SirenixEditorGUI.ToolbarTab(isModuleActive, moduleGuiContent))
+            if (!SirenixEditorGUI.ToolbarTab(isActive, guiContent) ||
+                isActive) return;
+                
+            
+            ActivateModule(module);
+        }
+
+        private bool CheckIsActiveModule(Module module)
+        {
+            if (_activeModule)
             {
-                ActivateModule(module);
+                return module == _activeModule;
             }
+
+            return false;
         }
 
         private static GUIContent GetModuleGuiContent(Module module)
         {
             Texture moduleIcon = module.Icon;
-            GUIContent moduleGuiContent;
+            GUIContent guiContent;
             string moduleTitle = $" {module.Title}";
 
             if (moduleIcon)
             {
-                moduleGuiContent = new GUIContent(moduleTitle, moduleIcon);
+                guiContent = new GUIContent(moduleTitle, moduleIcon);
             }
             else
             {
-                moduleGuiContent = new GUIContent(moduleTitle);
+                guiContent = new GUIContent(moduleTitle);
             }
 
-            return moduleGuiContent;
+            return guiContent;
         }
 
         private void ActivateModule(Module module)
         {
-            if (_selectedModule != module)
+            _activeModule = module;
+            Static_RebuildMenuTree();
+        }
+
+        public static void Static_RebuildMenuTree()
+        {
+            _shouldRebuildTree = true;
+        }
+
+        public void RebuildMenuTree()
+        {
+            Static_RebuildMenuTree();
+        }
+
+        private void DrawSelectedModuleTree()
+        {
+            if (_activeModule)
             {
-                _selectedModule = module;
-                RebuildMenuTree();
+                _currentSubmoduleMenuItems = _activeModule.DrawTree(this);
             }
         }
 
-        private bool CheckIsModuleActive(Module module)
+        private void UpdateTargets(SelectionChangedType selectionChangedType)
         {
-            bool isModuleActive = false;
+            OdinMenuTreeSelection selection = Tree.Selection;
+            Targets = selection.SelectedValues.ToArray();
 
-            if (_selectedModule != null)
+            DetermineSelectedSubmodule();
+        }
+
+        private void DetermineSelectedSubmodule()
+        {
+            OdinMenuTreeSelection selection = Tree.Selection;
+            if (selection.Count == 1)
             {
-                isModuleActive = module == _selectedModule;
+                OdinMenuItem selectedItem = selection[0];
+                _currentSubmoduleMenuItems.TryGetValue(selectedItem, out _selectedSubmodule);
             }
-
-            return isModuleActive;
         }
 
         private void DrawTopToolbar()
         {
-            if (_selectedModule == null) return;
+            if (_activeModule == null) return;
 
             SirenixEditorGUI.BeginHorizontalToolbar();
             GUILayout.FlexibleSpace();
@@ -239,21 +258,6 @@ namespace OdinUtils.TheHub
             if (Tree == null || !_selectedSubmodule) return;
 
             _selectedSubmodule.DrawToolbarMods(this);
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-
-            if (MenuTree != null)
-            {
-                MenuTree.Selection.SelectionChanged -= UpdateTargets;
-            }
-
-            if (CurrentDrawAssetCreator != null && CurrentDrawAssetCreator.Data != null)
-            {
-                DestroyImmediate(CurrentDrawAssetCreator.Data);
-            }
         }
     }
 }

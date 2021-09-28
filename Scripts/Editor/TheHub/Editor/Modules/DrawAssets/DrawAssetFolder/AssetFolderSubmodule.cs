@@ -4,6 +4,7 @@ using System.Linq;
 using niscolas.UnityExtensions;
 using niscolas.UnityUtils.Core;
 using niscolas.UnityUtils.Core.Editor;
+using niscolas.UnityUtils.Odin.Editor;
 using niscolasPlugins.UnityUtils.Core;
 using OdinUtils.TheHub;
 using Plugins.OdinUtils.Editor;

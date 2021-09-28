@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using niscolas.UnityExtensions;
+using niscolas.UnityUtils.Core;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
@@ -141,14 +142,23 @@ namespace OdinUtils.TheHub
             menuItems.Add(createNewMenuItem);
         }
 
-        private static void DrawSubmodules (
+        private static void DrawSubmodules(
             IHub hub, Module module, List<OdinMenuItem> menuItems, string moduleMenuPath
         )
         {
             OdinMenuTree tree = hub.Tree;
 
-            foreach (Submodule submodule in module.Submodules)
+            List<Submodule> submodules = module.Submodules.ToList();
+            for (int i = 0; i < submodules.Count; i++)
             {
+                Submodule submodule = submodules[i];
+                if (!submodule)
+                {
+                    TheBugger.LogRealWarning($"null submodule entry on {module.name}, removing...");
+                    submodules.RemoveAt(i);
+                    continue;
+                }
+
                 string submoduleMenuPath = $"{moduleMenuPath}/{submodule.Title} [Submodule]";
                 IEnumerable<OdinMenuItem> submodulesMenuItems = tree
                     .AddObjectAtPath(submoduleMenuPath, submodule);
