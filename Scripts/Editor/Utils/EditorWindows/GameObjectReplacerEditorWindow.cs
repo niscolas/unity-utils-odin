@@ -7,7 +7,6 @@ using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityUtils;
-using GameObjectUtility = niscolas.UnityUtils.Core.GameObjectUtility;
 
 namespace Editor.EditorWindows
 {
@@ -53,7 +52,7 @@ namespace Editor.EditorWindows
         [ShowInInspector]
         private Transform[] Targets => Selection.transforms;
 
-        private Transform OldInstancesParent => GameObjectUtility
+        private Transform OldInstancesParent => TheGameObjectUtility
             .FindOrCreate(nameof(OldInstancesParent)).transform;
 
         private static readonly ISpawnService SpawnService = new UnityInstantiateService();
