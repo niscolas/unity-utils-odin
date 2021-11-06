@@ -33,12 +33,23 @@ namespace OdinUtils.TheHub
         {
             object[] drawTargets = hub.Targets;
 
-            if (!ShouldDrawToolbarMods(drawTargets)) return;
+            if (!ShouldDrawToolbarMods(drawTargets))
+            {
+                return;
+            }
 
-            if (_toolbarMods.IsNullOrEmpty()) return;
+            if (_toolbarMods.IsNullOrEmpty())
+            {
+                return;
+            }
 
             foreach (ToolbarMod toolbarMod in _toolbarMods)
             {
+                if (!toolbarMod)
+                {
+                   continue;
+                }
+                
                 toolbarMod.Draw(hub);
             }
         }
