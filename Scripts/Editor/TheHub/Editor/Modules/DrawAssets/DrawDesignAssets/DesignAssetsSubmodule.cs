@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using niscolas.UnityExtensions;
+using niscolas.UnityUtils.Core.Extensions;
 using Plugins.OdinUtils.Editor.Attributes;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
